@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive BERT Application</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Interactive BERT Application</h1>
+
+    <!-- Upload Data Point -->
+    <form action="/upload_data" method="post">
+        <h3>Upload Data Point</h3>
+        <textarea name="title_abstract" rows="5" placeholder="Title + Abstract" required></textarea><br>
+        <textarea name="main_categories" rows="2" placeholder="Main Categories" required></textarea><br>
+        <button type="submit">Submit Data</button>
+    </form>
+
+    <!-- Upload TSV File -->
+    <h3>Upload TSV File</h3>
+    <form action="/upload_tsv" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".tsv" required><br>
+        <button type="submit">Upload File</button>
+    </form>
+
+    <!-- Status Messages -->
+    {% if status_message %}
+        <div class="status-message {{ status_category }}">
+            {{ status_message }}
+        </div>
+    {% endif %}
+
+
+    <!-- Prediction -->
+  <!-- Prediction -->
+<form action="/predict" method="post">
+    <h3>Predict</h3>
+    <textarea name="predict_input" rows="5" placeholder="Enter text for prediction" required></textarea><br>
+    <button type="submit">Predict</button>
+</form>
+
+<!-- Display Prediction and Feedback -->
+{% if prediction %}
+<div>
+    <h4>Prediction Result: {{ prediction }}</h4>
+    <form id="feedback-form" action="/feedback" method="post">
+        <!-- Hidden fields to pass input and prediction to the feedback route -->
+        <input type="hidden" name="input_text" value="{{ input_text }}">
+        <input type="hidden" name="predicted_output" value="{{ prediction }}">
+        
+        <!-- Feedback buttons -->
+        <button type="submit" name="feedback_type" value="correct">Correct</button>
+        <button id="incorrect-button" type="button">Incorrect</button>
+    </form>
+</div>
+{% endif %}
+
+<!-- Handle Incorrect Feedback -->
+<div id="incorrect-feedback-form" style="display: none;">
+    <h4>Submit Correction</h4>
+    <form action="/feedback" method="post">
+        <input type="text" name="correct_output" placeholder="Enter the correct output" required>
+        
+        <!-- Hidden fields to ensure the original input and predicted output are passed -->
+        <input type="hidden" name="input_text" value="{{ input_text }}">
+        <input type="hidden" name="predicted_output" value="{{ prediction }}">
+        <input type="hidden" name="feedback_type" value="incorrect">
+
+        <button type="submit">Submit Correction</button>
+    </form>
+</div>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul>
+      {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<!-- JavaScript to handle feedback form display -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const feedbackForm = document.getElementById('feedback-form');
+        const incorrectFeedbackForm = document.getElementById('incorrect-feedback-form');
+        const incorrectButton = document.getElementById('incorrect-button');
+
+        incorrectButton.addEventListener('click', function () {
+            // Hide the original feedback form and show the incorrect feedback form
+            feedbackForm.style.display = 'none';
+            incorrectFeedbackForm.style.display = 'block';
+        });
+    });
+</script>
+
+</body>
+</html>
